@@ -1,0 +1,42 @@
+model = dict(
+    backbone=dict(
+        type='TwistNet_ResNet',
+        slave_depth=18,
+        slave_strides=(1, 2, 2, 2),
+        slave_dilations=(1, 1, 1, 1),
+        slave_avg_down=False,
+        slave_conv_cfg=None,
+        slave_norm_cfg=dict(type='SyncBN', requires_grad=True),
+        slave_norm_eval=False,
+        slave_act_cfg=dict(type='ReLU'),
+        slave_drop_prob=0.1,
+        slave_init_cfg=dict(
+            type='Pretrained',
+            checkpoint='checkpoints/new_one/RGB_weight_hb2next_resnet18.pth'),
+        master_channels=(32, 64, 128, 256),
+        master_blocks=(2, 2, 2, 2),
+        master_strides=[(1, 2, 2), (1, 2, 2), (1, 2, 2), (1, 2, 2)],
+        master_dilations=[(1, 1, 1), (2, 1, 1), (4, 1, 1), (8, 1, 1)],
+        m_module_paths=4,
+        m_module_groups=4,
+        m_module_expand_ratio=2,
+        ct_module_compress_ratios=(1, 1),
+        bt_modes=('dual_mul_add', 'dual_mul_add', 'dual_mul_add', 'dual_mul_add_e'),
+        master_order=('conv', 'norm', 'act'),
+        master_conv_cfg=dict(type="Conv3d"),
+        master_norm_cfg=dict(type='SyncBN', requires_grad=True),
+        master_norm_eval=False,
+        master_act_cfg=dict(type='ReLU'),
+        master_drop_prob=0.1,
+        with_cp=False,
+        multi_modals=2,
+        style='pytorch'),
+    head=dict(
+        in_channels=256,
+        loss=dict(loss_weight=1.0, type='AsymmetricLoss'),
+        num_classes=2,
+        type='LinearClsHead'),
+    neck=dict(type='GlobalAveragePooling'),
+    type='ImageClassifier')
+
+
