@@ -1,2 +1,4 @@
 # Twist3DNet
 Twist3DNet: a 2D-3D hybrid network based on transfer learning for prognosis classification of hypopharyngeal cancer. This config is used on HPC dataset(based on mmpretrain) And the checkpoint file of this config is normal pretrained weights of ResNet18-3D, just load it.
+
+We have updated the repository with the latest implementation of Twist3DNet for hypopharyngeal cancer prognosis classification. In addition to the original 2D–3D hybrid framework based on MMPreTrain, this update provides the simple model code for Twist3DNet + ResNet18-2D, as well as additional 2D branch implementations including ShuffleNetV2-2D, SENet18-2D, and ConvMixer-2D. Furthermore, two modified hybrid networks, H-DenseUNet for classification and MDU-Net for classification, are included as comparative models to facilitate fair performance evaluation against the proposed Twist3DNet framework.
