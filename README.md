@@ -15,7 +15,7 @@ We have updated the repository with the latest implementation of Twist3DNet for 
   - [3DLSC-COVID Dataset](#3dlsc-covid-dataset)
 - [Usage](#usage)
 - [Results](#results)
-- [Citation](#citation)
+- [Additional Documentation](#additional-documentation)
 
 
 ## Environment Dependencies
@@ -249,3 +249,11 @@ The following table summarizes the performance of Twist3DNet and the comparative
 | MDU-Net (classification)     |    63.85 ± 10.76 |     68.88 ± 6.90 |     75.33 ± 5.82 |     68.13 ± 9.08 |      13.20 |   136.00 |        57.65 |            1.415 |
 
 Among the evaluated models, **Twist3DNet + ResNet18-2D** achieved the highest mF1, mAccuracy, and mRecall, while **Twist3DNet + SENet18-2D** achieved the highest mPrecision. These results demonstrate the effectiveness of combining 2D feature extraction with 3D volumetric modeling for HPC prognosis classification.
+
+## Additional Documentation
+
+Additional details on the architectural adaptation of **H-DenseUNet** and **MDU-Net** from segmentation to classification, together with the corresponding objective-function ablation experiments, are provided in the following supplementary document:
+
+[Architectural Adaptation and Objective-Function Ablation of H-DenseUNet and MDU-Net for Classification](Architectural%20Adaptation%20and%20Objective-Function%20Ablation%20of%20H-DenseUNet%20and%20MDU-Net%20for%20Classification.docx)
+
+
