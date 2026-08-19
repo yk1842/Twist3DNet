@@ -148,4 +148,46 @@ During training, the training dataset underwent **two rounds of resampling**, an
 
 The publicly available data can be obtained from the **DeepSC-COVID** GitHub repository(https://github.com/XiaofeiWang2018/DeepSC-COVID). Please follow the instructions provided in the original repository to download the released 3DLSC-COVID data.
 
+## Usage
+
+### Model Implementation
+
+The main implementation of Twist3DNet is provided in:
+
+`twist3dnet with resnet.py`
+
+The default 2D branch is ResNet18-2D. Alternative 2D branches, including ShuffleNetV2-2D, SENet18-2D, and ConvMixer-2D, are provided in:
+
+`2d branches.py`
+
+Users can replace the default 2D branch with the corresponding implementation according to their experimental requirements.
+
+### Data Preparation
+
+The repository does not include the original clinical data or dataset preprocessing scripts. Please prepare the HPC, BraTS2018, and 3DLSC-COVID datasets according to the procedures described in the [Data Preparation](#data-preparation) section.
+
+### Pre-trained Weights
+
+ImageNet-pretrained weights for standard 2D backbones can be loaded directly through `torchvision`. The weights are automatically downloaded and cached when the corresponding pretrained model is instantiated.
+
+RadiologyNET-pretrained weights can be obtained from the [RadiologyNET-TL-models repository](https://github.com/AIlab-RITEH/RadiologyNET-TL-models). Please follow the instructions provided in the original repository for downloading and loading the corresponding weights.
+
+### Training Configuration
+
+| Setting | Value |
+|:---|:---|
+| Optimizer | AdamW |
+| Loss function | Asymmetric Loss |
+| Learning rate | 0.003 |
+| Maximum epochs | 100 |
+| Checkpoint saving | Every epoch |
+| Model selection | Highest validation mF1 |
+| HPC batch size | 16 |
+| BraTS2018 batch size | 8 |
+| 3DLSC-COVID batch size | 16 |
+
+The model parameters were saved after each epoch, and the model achieving the highest macro-F1 (mF1) score on the validation set was retained.
+
+The experiments reported in the manuscript were originally conducted using PyTorch 2.0. The current repository has also been tested with PyTorch 2.5.1, which is used in the provided environment configuration.
+
 
