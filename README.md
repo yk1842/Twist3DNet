@@ -1,5 +1,6 @@
 # Twist3DNet
-Twist3DNet: a 2D-3D hybrid network based on transfer learning for prognosis classification of hypopharyngeal cancer. This config is used on HPC dataset(based on mmpretrain) And the checkpoint file of this config is normal pretrained weights of ResNet18-3D, just load it.
+Twist3DNet is a 2D–3D hybrid network based on transfer learning for prognosis classification of hypopharyngeal cancer. The MMPreTrain-based configuration provided in this repository was developed for the HPC dataset. The checkpoint specified in the configuration corresponds to pretrained ResNet18-3D weights used for backbone initialization rather than a trained Twist3DNet checkpoint.
+
 
 We have updated the repository with the latest implementation of Twist3DNet for hypopharyngeal cancer prognosis classification. In addition to the original 2D–3D hybrid framework based on MMPreTrain, this update provides the simple model code for Twist3DNet + ResNet18-2D, as well as additional 2D branch implementations including ShuffleNetV2-2D, SENet18-2D, and ConvMixer-2D. Furthermore, two modified hybrid networks, H-DenseUNet for classification and MDU-Net for classification, are included as comparative models to facilitate fair performance evaluation against the proposed Twist3DNet framework.
 
@@ -68,7 +69,7 @@ This project requires the following dependencies. We recommend using a virtual e
 | tensorflow | 2.21.0 | wheel | 0.46.3 |
 | termcolor | 3.3.0 | wrapt | 2.1.2 |
 
-> **Note:** System-level dependencies (e.g., `bzip2`, `libgcc`, `openssl`, `zlib`, etc.) are omitted from the list above. They will be automatically handled by the package manager during environment setup.
+> **Note:** System-level dependencies (e.g., `bzip2`, `libgcc`, `openssl`, and `zlib`) are omitted from the list above. Additional system packages may be required depending on the operating system and CUDA environment.
 
 ### Installation
 
@@ -125,7 +126,8 @@ The dataset was divided into:
 
 All volumes were resized to **152×244×244 (D×H×W)** for model input. The batch size was set to **8**.
 
-The original dataset can be obtained from **MICCAI BraTS 2018: Data**(https://www.med.upenn.edu/sbia/brats2018/). Please follow the official BraTS instructions to obtain the dataset before running the preprocessing and training procedures.
+The original dataset can be obtained from [MICCAI BraTS 2018: Data](https://www.med.upenn.edu/sbia/brats2018/). Please follow the official BraTS instructions to obtain the dataset before running the preprocessing and training procedures.
+
 
 ### 3DLSC-COVID Dataset
 
@@ -146,48 +148,104 @@ The dataset was divided into:
 
 During training, the training dataset underwent **two rounds of resampling**, and the batch size was set to **16**.
 
-The publicly available data can be obtained from the **DeepSC-COVID** GitHub repository(https://github.com/XiaofeiWang2018/DeepSC-COVID). Please follow the instructions provided in the original repository to download the released 3DLSC-COVID data.
+The publicly available data can be obtained from the [DeepSC-COVID GitHub repository](https://github.com/XiaofeiWang2018/DeepSC-COVID). Please follow the instructions provided in the original repository to download the released 3DLSC-COVID data.
+
 
 ## Usage
 
+After installing the required dependencies, prepare the datasets according to the procedures described in the [Data Preparation](#data-preparation) section.
+
 ### Model Implementation
 
-The main implementation of Twist3DNet is provided in:
+The main implementation of Twist3DNet with the ResNet18-2D branch is provided in:
 
-`twist3dnet with resnet.py`
+```text
+twist3dnet_with_resnet.py
+```
 
-The default 2D branch is ResNet18-2D. Alternative 2D branches, including ShuffleNetV2-2D, SENet18-2D, and ConvMixer-2D, are provided in:
+The default 2D branch is **ResNet18-2D**. Alternative 2D branches, including **ShuffleNetV2-2D**, **SENet18-2D**, and **ConvMixer-2D**, are provided in the corresponding 2D branch implementation file.
 
-`2d branches.py`
+Users can replace the default ResNet18-2D branch in `twist3dnet_with_resnet.py` with the corresponding implementation according to their experimental requirements.
 
-Users can replace the default 2D branch with the corresponding implementation according to their experimental requirements.
+The repository also provides implementations of several comparative models used in this study, including ResNet18-3D, ShuffleNetV2-3D, SENet18-3D, ConvMixer-3D, H-DenseUNet for classification, and MDU-Net for classification.
 
-### Data Preparation
+### Training
 
-The repository does not include the original clinical data or dataset preprocessing scripts. Please prepare the HPC, BraTS2018, and 3DLSC-COVID datasets according to the procedures described in the [Data Preparation](#data-preparation) section.
+The five-fold cross-validation training implementation used for Twist3DNet is provided in:
+
+```text
+train_fold_twist.py
+```
+
+The training script includes the main training procedure, data augmentation, cross-validation, checkpoint saving, and model selection strategy used in our experiments.
+
+The dataset loading and preprocessing implementation used for the HPC experiments is provided in:
+
+```text
+Hpc_dataset.py
+```
+
+Because the HPC dataset is private and cannot be publicly distributed, users who wish to adapt the training pipeline to their own datasets should modify the dataset loading and path configuration accordingly.
 
 ### Pre-trained Weights
 
-ImageNet-pretrained weights for standard 2D backbones can be loaded directly through `torchvision`. The weights are automatically downloaded and cached when the corresponding pretrained model is instantiated.
+Transfer learning is used to initialize the feature extraction branches.
 
-RadiologyNET-pretrained weights can be obtained from the [RadiologyNET-TL-models repository](https://github.com/AIlab-RITEH/RadiologyNET-TL-models). Please follow the instructions provided in the original repository for downloading and loading the corresponding weights.
+For standard 2D backbones, **ImageNet-pretrained weights** can be loaded directly through `torchvision`. The corresponding weights are automatically downloaded and cached when a pretrained model is instantiated.
+
+**RadiologyNET-pretrained weights** can be obtained from the [RadiologyNET-TL-models repository](https://github.com/AIlab-RITEH/RadiologyNET-TL-models). Please follow the instructions provided in the original repository to download and load the corresponding pretrained weights.
+
+For the 3D branch, the checkpoint used for initialization corresponds to standard pretrained **ResNet18-3D** weights. These pretrained weights are used only for backbone initialization and should not be confused with the final trained Twist3DNet checkpoints.
+
+The pretrained-weight paths or initialization settings should be configured in `twist3dnet_with_resnet.py` according to the selected 2D and 3D backbones.
 
 ### Training Configuration
 
-| Setting | Value |
-|:---|:---|
-| Optimizer | AdamW |
-| Loss function | Asymmetric Loss |
-| Learning rate | 0.003 |
-| Maximum epochs | 100 |
-| Checkpoint saving | Every epoch |
-| Model selection | Highest validation mF1 |
-| HPC batch size | 16 |
-| BraTS2018 batch size | 8 |
-| 3DLSC-COVID batch size | 16 |
+The main training settings used in our experiments are summarized below.
 
-The model parameters were saved after each epoch, and the model achieving the highest macro-F1 (mF1) score on the validation set was retained.
+| Setting                | Value                  |
+| :--------------------- | :--------------------- |
+| Optimizer              | AdamW                  |
+| Loss function          | Asymmetric Loss        |
+| Learning rate          | 0.003                  |
+| Weight decay           | 1e-4                   |
+| Maximum epochs         | 100                    |
+| Random seed            | 42                     |
+| Checkpoint saving      | Every epoch            |
+| Model selection        | Highest validation mF1 |
+| HPC input size         | 13×256×256             |
+| HPC resampling         | 15 rounds              |
+| HPC batch size         | 16                     |
+| BraTS2018 batch size   | 8                      |
+| 3DLSC-COVID resampling | 2 rounds               |
+| 3DLSC-COVID batch size | 16                     |
 
-The experiments reported in the manuscript were originally conducted using PyTorch 2.0. The current repository has also been tested with PyTorch 2.5.1, which is used in the provided environment configuration.
+For the HPC experiments, model parameters were saved after each epoch. Within each cross-validation fold, the checkpoint achieving the highest **macro-F1 (mF1)** score on the validation subset was retained as the best model. The final performance was obtained by averaging the evaluation metrics across the five folds.
+
+### Experimental Environment
+
+The experiments reported in the manuscript were conducted on a server equipped with one **AMD EPYC 7763 64-core/128-thread CPU** and four **NVIDIA GeForce RTX 4090 GPUs** with a total of 96 GB GPU memory, running Ubuntu 22.04 LTS.
+
+The original experiments were conducted using **PyTorch 2.0**. The current repository has also been tested with **PyTorch 2.5.1**, which is used in the provided environment configuration.
 
 
+## Results
+
+### Results on the HPC Dataset
+
+The following table summarizes the performance of Twist3DNet and the comparative models on the HPC dataset. Classification metrics are reported as **mean ± standard deviation** over five-fold cross-validation.
+
+| Method                       |          mF1 (%) |    mAccuracy (%) |   mPrecision (%) |      mRecall (%) | Params (M) |   GFLOPs | Latency (ms) | Peak Memory (GB) |
+| :--------------------------- | ---------------: | ---------------: | ---------------: | ---------------: | ---------: | -------: | -----------: | ---------------: |
+| ResNet18-3D                  |     64.25 ± 7.57 |     66.38 ± 9.15 |     64.81 ± 6.23 |     66.00 ± 9.02 |      33.18 |    95.24 |        21.57 |            0.243 |
+| ShuffleNetV2-3D              |     65.87 ± 9.06 |     67.17 ± 8.30 |     66.57 ± 8.57 |     66.94 ± 8.26 |   **1.30** | **2.02** |        10.14 |        **0.210** |
+| SENet18-3D                   |     65.96 ± 5.51 |     67.72 ± 4.84 |     68.25 ± 6.65 |     67.43 ± 5.97 |      33.27 |    18.71 |     **6.87** |            0.326 |
+| ConvMixer-3D                 |     58.70 ± 8.83 |     60.47 ± 8.71 |     59.11 ± 9.19 |     59.46 ± 9.52 |      23.75 |   292.84 |       118.82 |            0.596 |
+| Twist3DNet + ResNet18-2D     | **75.78 ± 6.36** | **78.12 ± 8.18** |     78.92 ± 8.09 | **75.30 ± 6.22** |      14.33 |    38.47 |        16.14 |            0.557 |
+| Twist3DNet + ShuffleNetV2-2D |     69.87 ± 8.78 |    72.28 ± 10.69 |     72.43 ± 9.41 |     69.57 ± 7.67 |       7.81 |    11.87 |        20.71 |            0.523 |
+| Twist3DNet + SENet18-2D      |     69.52 ± 5.29 |     74.75 ± 6.09 | **81.23 ± 4.67** |     70.31 ± 3.88 |      14.42 |    38.49 |        17.69 |            0.640 |
+| Twist3DNet + ConvMixer-2D    |     63.87 ± 6.96 |     66.38 ± 8.35 |     64.35 ± 5.55 |     65.52 ± 8.15 |       5.51 |    15.00 |        15.03 |            0.661 |
+| H-DenseUNet (classification) |     70.01 ± 8.68 |     72.25 ± 9.41 |     70.89 ± 6.96 |    71.84 ± 11.12 |      13.59 |   121.69 |        52.12 |            0.783 |
+| MDU-Net (classification)     |    63.85 ± 10.76 |     68.88 ± 6.90 |     75.33 ± 5.82 |     68.13 ± 9.08 |      13.20 |   136.00 |        57.65 |            1.415 |
+
+Among the evaluated models, **Twist3DNet + ResNet18-2D** achieved the highest mF1, mAccuracy, and mRecall, while **Twist3DNet + SENet18-2D** achieved the highest mPrecision. These results demonstrate the effectiveness of combining 2D feature extraction with 3D volumetric modeling for HPC prognosis classification.
